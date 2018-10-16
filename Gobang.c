@@ -1,24 +1,24 @@
 #include<stdio.h>
-#define r 20
-#define c 20
-#define count 5
-#define red 'x'
-#define blue '*'
+#define R 20
+#define C 20
+#define COUNT 5
+#define RED 'x'
+#define BLUE '*'
 
 void main(){
-	void init(char (*arr)[c]);
-	void scanEle(char (*arr)[c],char flag);
-	void drawPic(char (*arr)[c]);
-	int checkWhoWin(char (*arr)[c],char flag,int x,int y);
-	char str[r][c];	
+	void init(char (*arr)[C]);
+	void scanEle(char (*arr)[C],char flag);
+	void drawPic(char (*arr)[C]);
+	int checkWhoWin(char (*arr)[C],char flag,int x,int y);
+	char str[R][C];	
 	init(str);	
 };
 
-void init(char (*arr)[c]){	
+void init(char (*arr)[C]){	
 	// initial page 
 	int j,i = 0;
-	while(i< r){
-		for( j = 0;j < c;j ++){	
+	while(i< R){
+		for( j = 0;j < C;j ++){	
 			if(i == 0){
 				*(*(arr + i)+j) = j;
 			}else{
@@ -32,20 +32,20 @@ void init(char (*arr)[c]){
 	}	
 	drawPic(arr);
 	// input directive
-	scanEle(arr,red);
+	scanEle(arr,RED);
 } 
 
-void drawPic(char (*arr)[c]){
+void drawPic(char (*arr)[C]){
 	// output picture of per change
 	int j,i = 0;
-	while(i < r){
-		for( j = 0;j < c;j ++){
+	while(i < R){
+		for( j = 0;j < C;j ++){
 			if(i == 0 || j == 0){
 				printf("%4i",*(*(arr + i)+j));	
 			}else{
 				printf("%4c",*(*(arr + i)+j));
 			}				
-			if(j + 1 == c){
+			if(j + 1 == C){
 				printf("\n");
 			}	
 		}
@@ -53,7 +53,7 @@ void drawPic(char (*arr)[c]){
 	}	
 }
 
-void scanEle(char (*arr)[c],char flag){
+void scanEle(char (*arr)[C],char flag){
 	printf("Please input directive(x,y):");
 	int x,y;
 	scanf("%d,%d",&x,&y);
@@ -72,10 +72,10 @@ void scanEle(char (*arr)[c],char flag){
 		*(*(arr + x)+y) = flag;	
 		system("cls");	
 		drawPic(arr);
-		if(flag == red){
-			scanEle(arr,blue);
+		if(flag == RED){
+			scanEle(arr,BLUE);
 		}else{
-			scanEle(arr,red);
+			scanEle(arr,RED);
 		}
 	}
 		
@@ -83,48 +83,72 @@ void scanEle(char (*arr)[c],char flag){
 	
 }
 
-int checkWhoWin(char (*arr)[c],char flag,int x,int y){
+int checkWhoWin(char (*arr)[C],char flag,int x,int y){
+	int FrwdCk(char (*arr)[C],char flag,char f , int x, int y);
 	// 00-invalid;01-success;02-continue;
 	
 	// check invalid input 
-	if(*(*(arr + x)+y) == red || *(*(arr + x)+y) == blue
-		 || x == 0 || y == 0 || x == r || y == c){
+	if(*(*(arr + x)+y) == RED || *(*(arr + x)+y) == BLUE
+		 || x == 0 || y == 0 || x == R || y == C){
 		printf("invalid input please input once again \n");		
 		return 00;
 	}
 	// check in row¡¢colum or diagonal of who have five chess; 
-	int i,row,col,dig;
-	row = 0;col = 0;dig = 0;
-	// not about range;
-	int startx,starty,endx,endy;
-	startx = x + 1 - count > 0 ? x + 1 - count : 1;
- 	starty = y + 1 - count > 0 ? y + 1 - count : 1;
- 	endx = x -1 +count < row ? x -1 +count > row : row - 1;
-  	endy = y -1 +count < row ? y -1 +count > row : row - 1;
-  	
-  	while(startx <= endx){
-		for(i = starty;i < endy; i ++){
-			if(*(*(arr + startx) +i) == flag){
-				// count row
-				row ++;
-			}
-			if(*(*(arr + startx ) + ) == flag){
-				col ++;
-			}
-			if(*(*(arr + x + i) + y +i) == flag ){
-				dig ++;
-			}
-		}  	
-		startx ++;
-  	}
+
 	
-	if(row == count || col == count || dig == count){
+	// not about range;
+	
+	if(FrwdCk(arr,flag,'u' , x, y) == 5){
+		return 01;
+	};
+	
+	/*if(row == COUNT || col == COUNT || dig == COUNT){
 		printf("%d,win!",flag);	
 		return 01;
-	}	
+	}*/	
 	return 02;
+	
 }
 
-
+int FrwdCk(char (*arr)[C],char flag,char f , int x, int y){
+		int i,count = 0;
+		i = 1;			
+		for(;i < COUNT;i++){
+			if(f == 'lu'){				
+				// left up
+				if(0 <=x - i && 0 <=y - i && *(*(arr + x -i) + y - i) == flag){
+					 count ++;
+				}else{
+					break;
+				}			
+			}
+			if(f == 'u'){				
+				// up
+				if(0 <=x - i && *(*(arr + x -i) + y) == flag){
+					 count ++;
+				}else{
+					break;
+				}			
+			}
+			if(f == 'ru'){				
+				// right up
+				if(COUNT <=x + i && COUNT <=y + i && *(*(arr + x + i) + y + i) == flag){
+					 count ++;
+				}else{
+					break;
+				}			
+			}
+			if(f == 'r'){				
+				// up
+				if(COUNT <= y + i && *(*(arr + x) + y + i) == flag){
+					 count ++;
+				}else{
+					break;
+				}			
+			}
+		}
+		return count;
+		
+	} 
 
 
