@@ -55,21 +55,26 @@ void drawPic(char (*arr)[C]){
 
 void scanEle(char (*arr)[C],char flag){
 	printf("Please input directive(x,y):");
-	int x,y;
+	int x,y,result;
 	scanf("%d,%d",&x,&y);
-	if(checkWhoWin(arr,flag,x,y) == 00){
+
+
+		
+	result = checkWhoWin(arr,flag,x,y);
+	if(result == 00){
 		scanEle(arr,flag);
 		return;
 	}
- 	if(checkWhoWin(arr,flag,x,y) == 01){
-		char tell;
-		printf("Are you want continue(y/n):");
-		scanf("%d",tell);
-		tell == 'y'? init(arr) : "";
+ 	if(result == 01){		
+		printf("Are you want continue(yes/no):");
+		char tell[3];
+		scanf("%s",&tell); 
+		
+		strcmp(tell,"yes") == 0? init(arr) : "";
 		return;
 	}
-	if(checkWhoWin(arr,flag,x,y) == 02){
-		*(*(arr + x)+y) = flag;	
+	if(result == 02){
+		*(*(arr + y)+x) = flag;	
 		system("cls");	
 		drawPic(arr);
 		if(flag == RED){
@@ -84,11 +89,12 @@ void scanEle(char (*arr)[C],char flag){
 }
 
 int checkWhoWin(char (*arr)[C],char flag,int x,int y){
-	int FrwdCk(char (*arr)[C],char flag,char f , int x, int y);
+	int FrwdCk(char (*arr)[C],char flag,char f[2] , int x, int y);
+	int dwCk(char (*arr)[C],char flag,char f[2] , int x, int y);
 	// 00-invalid;01-success;02-continue;
 	
 	// check invalid input 
-	if(*(*(arr + x)+y) == RED || *(*(arr + x)+y) == BLUE
+	if(*(*(arr + y)+x) == RED || *(*(arr + y)+x) == BLUE
 		 || x == 0 || y == 0 || x == R || y == C){
 		printf("invalid input please input once again \n");		
 		return 00;
@@ -96,51 +102,99 @@ int checkWhoWin(char (*arr)[C],char flag,int x,int y){
 	// check in row¡¢colum or diagonal of who have five chess; 
 
 	
-	// not about range;
-	
-	if(FrwdCk(arr,flag,'u' , x, y) == 5){
+	// not about range;	
+
+	//printf("%d\n",dwCk(arr,flag,"rd" , x, y));	
+	if(dwCk(arr,flag,"rd" , x, y) >= COUNT || 
+		dwCk(arr,flag,"d" , x, y) >= COUNT ||
+			dwCk(arr,flag,"ld" , x, y) >= COUNT ||
+				dwCk(arr,flag,"l" , x, y) >= COUNT){
+		printf("%c,win!",flag);	
 		return 01;
-	};
-	
-	/*if(row == COUNT || col == COUNT || dig == COUNT){
-		printf("%d,win!",flag);	
-		return 01;
-	}*/	
+	}
 	return 02;
 	
 }
 
-int FrwdCk(char (*arr)[C],char flag,char f , int x, int y){
+int dwCk(char (*arr)[C],char flag,char f[2] , int x, int y){	
+	
+	// include self;
+	int i,count = 1;
+	for(i= 1;i < COUNT;i++){		
+			if(strcmp(f,"rd") == 0){				
+				// right down
+				if(x + i <= C && y + i < R && *(*(arr + y + i) + x + i) == flag){
+					 count ++;
+				}else{
+					count = count + FrwdCk(arr,flag,"lu", x, y);
+					break;
+				}			
+			}
+			if(strcmp(f,"d") == 0){				
+				// down
+				if(y + i <= R && *(*(arr + y + i) + x) == flag){
+					 count ++;
+				}else{
+					count = count + FrwdCk(arr,flag,"u", x, y);
+					break;
+				}			
+			}
+			if(strcmp(f,"ld") == 0){	
+						
+				// left down
+				if(R <=y + i && 0 <=x - i && *(*(arr + y + i) + x - i) == flag){
+					 count ++;
+				}else{
+					count = count + FrwdCk(arr,flag,"ru", x, y);
+					break;
+				}			
+			}
+			if(strcmp(f,"l") == 0){				
+				// left
+				if(0 <= x - i && *(*(arr + y) + x - i) == flag){
+					 count ++;
+				}else{
+					count = count + FrwdCk(arr,flag,"r", x, y);
+					break;
+				}			
+			}
+		}
+		return count;
+}
+
+int FrwdCk(char (*arr)[C],char flag,char f[2] , int x, int y){
+		// No include self
 		int i,count = 0;
-		i = 1;			
-		for(;i < COUNT;i++){
-			if(f == 'lu'){				
+			
+		for(i= 1;i < COUNT;i++){
+		
+			if(strcmp(f,"lu") == 0){				
 				// left up
-				if(0 <=x - i && 0 <=y - i && *(*(arr + x -i) + y - i) == flag){
+				if(0 <=x - i && 0 <=y - i && *(*(arr + y -i) + x - i) == flag){
 					 count ++;
 				}else{
 					break;
 				}			
 			}
-			if(f == 'u'){				
+			if(strcmp(f,"u") == 0){				
 				// up
-				if(0 <=x - i && *(*(arr + x -i) + y) == flag){
+				if(0 <=y - i && *(*(arr + y -i) + x) == flag){
 					 count ++;
 				}else{
 					break;
 				}			
 			}
-			if(f == 'ru'){				
+			if(strcmp(f,"ru") == 0){				
 				// right up
-				if(COUNT <=x + i && COUNT <=y + i && *(*(arr + x + i) + y + i) == flag){
+				if(0 <= y - i && x + i <= C && *(*(arr + y + i) + x + i) == flag){
 					 count ++;
 				}else{
 					break;
 				}			
 			}
-			if(f == 'r'){				
-				// up
-				if(COUNT <= y + i && *(*(arr + x) + y + i) == flag){
+			if(strcmp(f,"r") == 0){				
+				// right
+				if(x + i < C && *(*(arr + y) + x + i) == flag){
 					 count ++;
 				}else{
 					break;
@@ -150,5 +204,6 @@ int FrwdCk(char (*arr)[C],char flag,char f , int x, int y){
 		return count;
 		
 	} 
+	
 
 
