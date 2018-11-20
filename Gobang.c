@@ -54,13 +54,19 @@ void drawPic(char (*arr)[C]){
 void scanEle(char (*arr)[C],char flag){
 	printf("Please input directive(x,y):");
 	int x,y,result;
-	scanf("%d,%d",&x,&y);		
+	scanf("%d,%d",&x,&y);	
 	result = checkWhoWin(arr,flag,x,y);
 	if(result == 00){
 		scanEle(arr,flag);
 		return;
 	}
- 	if(result == 01){		
+ 	if(result == 01){
+ 		*(*(arr + y)+x) = flag;	
+		#ifndef DEBUGM
+		system("cls");
+		#endif	
+		drawPic(arr);
+	 	printf("%c,win!\n",flag);		 		
 		printf("Are you want continue(yes/no):");
 		char tell[3];
 		scanf("%s",&tell); 
@@ -70,7 +76,9 @@ void scanEle(char (*arr)[C],char flag){
 	}
 	if(result == 02){
 		*(*(arr + y)+x) = flag;	
-		system("cls");	
+		#ifndef DEBUGM
+		system("cls");
+		#endif	
 		drawPic(arr);
 		if(flag == RED){
 			scanEle(arr,BLUE);
@@ -78,8 +86,6 @@ void scanEle(char (*arr)[C],char flag){
 			scanEle(arr,RED);
 		}
 	}
-		
-		
 	
 }
 

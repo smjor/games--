@@ -1,6 +1,11 @@
+
+
+	
 int checkWhoWin(char (*arr)[C],char flag,int x,int y){
 	int FrwdCk(char (*arr)[C],char flag,char f[2] , int x, int y);
 	int dwCk(char (*arr)[C],char flag,char f[2] , int x, int y);
+	int evalFunc(char (*arr)[C],char flag, int x, int y);
+
 	// 00-invalid;01-success;02-continue;
 	
 	// check invalid input 
@@ -11,106 +16,264 @@ int checkWhoWin(char (*arr)[C],char flag,int x,int y){
 	}
 	// check in row¡¢colum or diagonal of who have five chess; 
 
-	
+	evalFunc(arr,flag, x, y);
 	// not about range;	
 
 	//printf("%d\n",dwCk(arr,flag,"rd" , x, y));	
-	if(dwCk(arr,flag,"rd" , x, y) >= COUNT || 
-		dwCk(arr,flag,"d" , x, y) >= COUNT ||
-			dwCk(arr,flag,"ld" , x, y) >= COUNT ||
-				dwCk(arr,flag,"l" , x, y) >= COUNT){
-		printf("%c,win!",flag);	
-		return 01;
+	int i;
+	int winFlag = 0;
+	
+	for(i = 0;i < JUDGE;i ++){
+		#ifdef DEBUGM
+		printf("upName=%s\n",cci_struct[i].upName);
+		printf("dName=%s\n",cci_struct[i].dName);
+		printf("countUp=%d\n",cci_struct[i].countUp);
+		printf("countD=%d\n",cci_struct[i].countD);
+		printf("countAmongUp=%d\n",cci_struct[i].countAmongUp);
+		printf("countAmongD=%d\n",cci_struct[i].countAmongD);
+		#endif
+		#ifndef DEBUGM		 
+		
+		if(5 <= cci_struct[i].countD || 5 <= cci_struct[i].countUp){
+			winFlag = 1;	
+		}			
+		if(5 <= (cci_struct[i].countD + cci_struct[i].countUp -1)){
+			winFlag = 1;	
+		}		
+		if(winFlag){
+			// success
+			return 01;
+		}
+		#endif
+		
 	}
+	
 	return 02;
 	
 }
 
-int dwCk(char (*arr)[C],char flag,char f[2] , int x, int y){	
+int evalFunc(char (*arr)[C],char flag, int x, int y){
+		// initialize struct cacheChessInfo
+		int i;
+		for(i = 0;i < JUDGE;i ++){
+			cci_struct[i].countUp = 0;
+			cci_struct[i].countD = 0;
+			cci_struct[i].countAmongUp = 0;
+			cci_struct[i].countAmongD = 0;
+		}
 	
+		dwCk(arr,flag,"rd" , x, y);
+		dwCk(arr,flag,"d" , x, y);
+		dwCk(arr,flag,"ld" , x, y);
+		dwCk(arr,flag,"l" , x, y);
+		FrwdCk(arr,flag,"lu" , x, y);
+		FrwdCk(arr,flag,"u" , x, y);
+		FrwdCk(arr,flag,"ru" , x, y);
+		FrwdCk(arr,flag,"r" , x, y);
+}
+
+int dwCk(char (*arr)[C],char flag,char f[2] , int x, int y){	
+
 	// include self;
 	int i,count = 1;
+	// cache Empty cell;
+	int countEmpty = 0;
+	// First count through the FLAG;
+	int first = 1;
+	
 	for(i= 1;i < COUNT;i++){		
-			if(strcmp(f,"rd") == 0){				
+			if(strcmp(f,"rd") == 0 && x + i <= C && y + i <= R){				
 				// right down
-				if(x + i <= C && y + i < R && *(*(arr + y + i) + x + i) == flag){
+				strcpy(cci_struct[0].dName,"rd");
+				
+				if(first && *(*(arr + y + i) + x + i) == flag){
 					 count ++;
-				}else{
-					count = count + FrwdCk(arr,flag,"lu", x, y);
-					break;
-				}			
+					 cci_struct[0].countD = count;
+				}else{					
+					first = 2;				
+				}		
+				if(count == 1){
+					if(*(*(arr + y + i) + x + i) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[0].countAmongD = countEmpty;
+						first = 1;
+					}else{
+						// block
+						break;
+					}
+					
+				}
+					
 			}
-			if(strcmp(f,"d") == 0){				
+			if(strcmp(f,"d") == 0 && y + i <= R){				
 				// down
-				if(y + i <= R && *(*(arr + y + i) + x) == flag){
+				strcpy(cci_struct[1].dName,"d");	
+				if(first && *(*(arr + y + i) + x) == flag){
 					 count ++;
-				}else{
-					count = count + FrwdCk(arr,flag,"u", x, y);
-					break;
-				}			
+					 cci_struct[1].countD = count;
+				}else{					
+					first = 0;	
+				}
+				if(count == 1){
+					if(*(*(arr + y + i) + x) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[1].countAmongD = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}
+					
+				}
+							
 			}
-			if(strcmp(f,"ld") == 0){	
-						
+			if(strcmp(f,"ld") == 0 && R <=y + i && 0 <x - i){	
+				strcpy(cci_struct[2].dName , "ld");			
 				// left down
-				if(R <=y + i && 0 <=x - i && *(*(arr + y + i) + x - i) == flag){
+				if(first && *(*(arr + y + i) + x - i) == flag){
 					 count ++;
-				}else{
-					count = count + FrwdCk(arr,flag,"ru", x, y);
-					break;
-				}			
+					 cci_struct[2].countD = count;
+				}else{					
+					first = 0;	
+				}
+				if(count == 1){
+					if(*(*(arr + y + i) + x - i) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[2].countAmongD = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}
+					
+				}
+							
 			}
-			if(strcmp(f,"l") == 0){				
+			if(strcmp(f,"l") == 0 && 0 < x - i){				
 				// left
-				if(0 <= x - i && *(*(arr + y) + x - i) == flag){
+				strcpy(cci_struct[3].dName , "l");
+				if(first && *(*(arr + y) + x - i) == flag){
 					 count ++;
-				}else{
-					count = count + FrwdCk(arr,flag,"r", x, y);
-					break;
-				}			
+					 cci_struct[3].countD = count;
+				}else{					
+					first = 0;	
+				}
+				if(count == 1){
+					if(*(*(arr + y) + x - i) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[3].countAmongD = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}					
+				}								
 			}
 		}
-		return count;
+		return 1;
 }
 
 int FrwdCk(char (*arr)[C],char flag,char f[2] , int x, int y){
-		// No include self
-		int i,count = 0;
-			
+	
+		// include self
+		int i,count = 1;
+		// cache Empty cell;
+		int countEmpty = 0;
+		// First count through the FLAG;
+		int first = 1;
 		for(i= 1;i < COUNT;i++){
 		
-			if(strcmp(f,"lu") == 0){				
+			if(strcmp(f,"lu") == 0 && 0 <x - i && 0 <y - i){				
 				// left up
-				if(0 <=x - i && 0 <=y - i && *(*(arr + y -i) + x - i) == flag){
+				strcpy(cci_struct[0].upName , "lu");
+				if(first == 1 && *(*(arr + y -i) + x - i) == flag){
 					 count ++;
+					 cci_struct[0].countUp = count;
 				}else{
-					break;
-				}			
+					
+					first = 0;
+				}
+								
+				if(count == 1){
+					if(*(*(arr + y -i) + x - i) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[0].countAmongUp = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}					
+				}
+														
 			}
-			if(strcmp(f,"u") == 0){				
+			if(strcmp(f,"u") == 0 && 0 <y - i){				
 				// up
-				if(0 <=y - i && *(*(arr + y -i) + x) == flag){
+				strcpy(cci_struct[1].upName , "u");	
+				if(first == 1 && *(*(arr + y -i) + x) == flag){
 					 count ++;
+					 cci_struct[1].countUp = count;
 				}else{
-					break;
-				}			
+					
+					first = 0;
+				}
+				
+				if(count == 1){
+					if(*(*(arr + y -i) + x) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[1].countAmongUp = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}
+					
+				}
+							
 			}
-			if(strcmp(f,"ru") == 0){				
+			if(strcmp(f,"ru") == 0 && 0 < y - i && x + i <= C){				
 				// right up
-				if(0 <= y - i && x + i <= C && *(*(arr + y + i) + x + i) == flag){
+				strcpy(cci_struct[2].upName , "ru");
+				if(first == 1 && *(*(arr + y + i) + x + i) == flag){
 					 count ++;
+					 cci_struct[2].countUp = count;
 				}else{
-					break;
-				}			
+					
+					first = 0;
+				}
+				if(count == 1){
+					if(*(*(arr + y + i) + x + i) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[2].countAmongUp = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}
+					
+				}
+								
 			}
-			if(strcmp(f,"r") == 0){				
+			if(strcmp(f,"r") == 0 && x + i < C){				
 				// right
-				if(x + i < C && *(*(arr + y) + x + i) == flag){
+				strcpy(cci_struct[3].upName , "r");		
+				if(first == 1 && *(*(arr + y) + x + i) == flag){
 					 count ++;
-				}else{
-					break;
-				}			
+					 cci_struct[3].countUp = count;
+				}else{					
+					first = 0;
+				}
+				if(count == 1){
+					if(*(*(arr + y) + x + i) != (flag == RED?BLUE:RED)){
+						// first come in;
+						countEmpty ++;
+						cci_struct[3].countAmongUp = countEmpty;
+						first = 1;
+					}else{
+						break;
+					}					
+				}					
 			}
 		}
-		return count;
-		
+		return 1;		
 } 
